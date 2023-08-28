@@ -4,7 +4,6 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <GL/glu.h>
-#include <zlib.h>
 
 #include <iostream>
 #include <cstdio>
@@ -12,7 +11,6 @@
 #include <string>
 #include <csignal>
 #include <exception>
-#include <cstdint>
 #include <iomanip>
 
 #include <thread>

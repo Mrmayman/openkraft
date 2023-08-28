@@ -1,9 +1,13 @@
+#ifndef NETWORKINGMAIN_H
+#define NETWORKINGMAIN_H
+
 #include <vector>
 #include <iostream>
 #include <thread>
 #include <chrono>
 
 #include "networkingFunctions.h"
+#include "sendPacket.h"
 #include "entities.h"
 #include "chunk.h"
 
@@ -15,39 +19,9 @@ extern float cameraX, cameraY, cameraZ;
 
 extern Entity *commonEntities[1024];
 
-namespace sendPacket
-{
-    void alive()
-    {
-        std::vector<uint8_t> aliveData = {0x00};
-        net::sendpacket(aliveData, mySocket);
-    }
-
-    void login()
-    {
-        std::vector<uint8_t> loginData = {0x01, 0x00, 0x00, 0x00, 0x0e};
-        net::appendString16("mrmayman", loginData);
-        loginData.insert(loginData.end(), {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
-        net::sendpacket(loginData, mySocket);
-    }
-
-    void position()
-    {
-        if (loggedIn)
-        {
-            std::vector<uint8_t> positionData = {0x0D};
-            net::appendDouble(commonEntities[0]->x, positionData);
-            net::appendDouble(commonEntities[0]->y, positionData);
-            net::appendDouble(commonEntities[0]->y + 1.64, positionData);
-            net::appendDouble(commonEntities[0]->z, positionData);
-            net::appendFloat(0.0, positionData);
-            net::appendFloat(0.0, positionData);
-            positionData.push_back(0x0);
-            net::sendpacket(positionData, mySocket);
-            positionData = {0x0D};
-        }
-    }
-}
+uint8_t receivedData[net::bufferSize];
+int bytesRead = 0;
+int packetCounter = 0;
 
 void runMultiplayer()
 {
@@ -92,7 +66,7 @@ void runMultiplayer()
         case 0x00: // Heartbeat
             break;
         case 0x02: // Login
-            std::cout << "Packet : Login\n";
+            std::cerr << "Packet : Login\n";
             if (!loggedIn)
             {
                 if (receivedData[i + 4] != 0x2d)
@@ -107,7 +81,7 @@ void runMultiplayer()
             i += 2;
             break;
         case 0x03: // Chat
-            std::cout << "Packet : Chat\n";
+            std::cerr << "Packet : Chat\n";
             length = (static_cast<uint16_t>(receivedData[i + 1]) << 8) |
                      static_cast<uint16_t>(receivedData[i + 2]);
             if (length > 254)
@@ -119,10 +93,11 @@ void runMultiplayer()
                 stringbuffer += receivedData[i + 3 + j];
             }
             std::cout << "[chat] " << stringbuffer << "\n";
+            std::cerr << "Packet : Chat Done\n";
             i += length;
             break;
         case 0x0d:
-            std::cout << "Packet : Position\n";
+            std::cerr << "Packet : Position\n";
             for (int j = 0; j < 8; j++)
             {
                 tempbytes[j] = receivedData[i + 1 + j];
@@ -156,10 +131,10 @@ void runMultiplayer()
             sendPacket::position();
             break;
         case 0x14:
-            std::cout << "Packet : Spawn Player\n";
-            length = (static_cast<uint16_t>(receivedData[i + 1 + 4]) << 8) |
-                     static_cast<uint16_t>(receivedData[i + 2 + 4]);
-            i += length;
+            std::cerr << "Packet : Spawn Player\n";
+            /*length = (static_cast<uint16_t>(receivedData[i+1+4]) << 8) |
+                      static_cast<uint16_t>(receivedData[i+2+4]);
+            i += length;*/
             break;
         case 0x18:
             std::cerr << "Broken Packet : Spawn Mob\n";
@@ -168,7 +143,7 @@ void runMultiplayer()
             std::cerr << "Broken Packet : Mob Metadata\n";
             break;
         case 0x32: // Pre-Chunk
-            std::cout << "Packet : Pre-Chunk\n";
+            std::cerr << "Packet : Pre-Chunk\n";
             if (!receivedData[i + 9])
             {
                 break;
@@ -185,8 +160,137 @@ void runMultiplayer()
                 receivedData[i + 8]);
             break;
         case 0x33:
-            std::cout << "Packet : Chunk\n";
-            networkChunks::loadChunk();
+            std::cerr << "Packet : Chunk\n";
+            chunkX = net::convertInt(
+                receivedData[i + 1],
+                receivedData[i + 2],
+                receivedData[i + 3],
+                receivedData[i + 4]);
+            tempShort = net::convertShort(
+                receivedData[i + 5],
+                receivedData[i + 6]);
+            chunkZ = net::convertInt(
+                receivedData[i + 7],
+                receivedData[i + 8],
+                receivedData[i + 9],
+                receivedData[i + 10]);
+
+            if (tempShort != 0)
+            {
+                std::cout << tempShort << ", ";
+                printf("%d\n", receivedData[i + 12]);
+                throw std::runtime_error("Chunk is vertically misaligned");
+                break;
+            }
+
+            compressedSize = net::convertInt(
+                receivedData[i + 14],
+                receivedData[i + 15],
+                receivedData[i + 16],
+                receivedData[i + 17]);
+
+            // std::cout << bytesRead << ", " << compressedSize << "\n";
+            std::cout << "started chunk " << compressedSize << "\n";
+            if (compressedSize > 1000000)
+            {
+                std::cerr << "invalid size chunk " << compressedSize << "\n";
+                i = net::bufferSize;
+                break;
+            }
+            i += 18;
+            for (int j = 0; j < compressedSize; j++)
+            {
+                if (i >= bytesRead)
+                {
+                    // throw std::runtime_error("The chunk is cut up :(");
+                    std::cout << "Cut up chunk, reading next packet "
+                              << "\n";
+                    sendPacket::alive();
+                    if (quit)
+                    {
+                        return;
+                    }
+                    // break;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(8));
+                    i = 0;
+                    memset(receivedData, 0, sizeof(receivedData));
+                    if (!net::receive(bytesRead, receivedData, mySocket))
+                    {
+                        std::cerr << "[error] Connection closed or error occurred while loading chunk\n";
+                        quit = 1;
+                        return;
+                    }
+                }
+                // std::cout << "reading chunk data " << i << "\n";
+                compressedData.push_back(receivedData[i]);
+                i++;
+            }
+            // std::cout << "finished chunk\n";
+            i -= 18;
+
+            if (!net::decompress(compressedData, decompressedData))
+            {
+                std::cout << "you idoit\n";
+                break;
+            }
+            for (int cyy = 0; cyy < 8; cyy++)
+            {
+                int64_t chunkTempX = floor(float(chunkX) / 32.0f);
+                int64_t chunkTempY = cyy;
+                int64_t chunkTempZ = floor(float(chunkZ) / 32.0f);
+                if (chunkMap.count(ChunkCoordinate(chunkTempX, chunkTempY, chunkTempZ)) == 0 &&
+                    abs(chunkTempX - (cameraX / 32)) <= chunk::renderDistance &&
+                    abs(chunkTempY - (cameraY / 32)) <= chunk::renderDistance &&
+                    abs(chunkTempZ - (cameraZ / 32)) <= chunk::renderDistance)
+                {
+                    Chunk genTempChunk = Chunk(chunkTempX, chunkTempY, chunkTempZ, 0);
+                    // genTempChunk.fill(1);
+                    // genTempChunk.updateMesh();
+                    genTempChunk.lock = 1;
+                    chunk::write(genTempChunk);
+                    if (!isArrayFilledWithZeroes(genTempChunk.blockData))
+                    {
+                        chunk::updateNeighbours(chunkTempX, chunkTempY, chunkTempZ);
+                    }
+                    chunkMap[ChunkCoordinate(chunkTempX, chunkTempY, chunkTempZ)].lock = 0;
+                }
+            }
+
+            for (int cy = 0; cy < 128; cy++)
+            {
+                for (int cx = 0; cx < 16; cx++)
+                {
+                    for (int cz = 0; cz < 16; cz++)
+                    {
+                        int index = cy + (cz * 128) + (cx * 128 * 16);
+                        int64_t chunkTempX = floor(float(chunkX) / 32.0f);
+                        int64_t chunkTempY = floor(float(cy) / 32.0f);
+                        int64_t chunkTempZ = floor(float(chunkZ) / 32.0f);
+                        ChunkCoordinate chunkCoord(chunkTempX, chunkTempY, chunkTempZ);
+                        // std::cout << ((chunkX + cx) % 32 + 32) % 32 << ", " << ((cy) % 32 + 32) % 32 << ", " << ((chunkZ + cz) % 32 + 32) % 32 << "\n";
+                        if (index < int(decompressedData.size()))
+                        {
+                            chunkMap[chunkCoord].blockData[((chunkX + cx) % 32 + 32) % 32]
+                                                          [((cy) % 32 + 32) % 32]
+                                                          [((chunkZ + cz) % 32 + 32) % 32] = int(decompressedData[index]);
+                        }
+                        // chunkMap[chunkCoord].updateMesh();
+                        // chunk::updateNeighbours(chunkTempX, chunkTempY, chunkTempZ);
+                        // std::cout << int(decompressedData[index]) << "\n";
+                    }
+                }
+            }
+            for (int cyy = 0; cyy < 8; cyy++)
+            {
+                int64_t chunkTempX = floor(float(chunkX) / 32.0f);
+                int64_t chunkTempZ = floor(float(chunkZ) / 32.0f);
+                ChunkCoordinate thisChunk = ChunkCoordinate(chunkTempX, cyy, chunkTempZ);
+                chunkMap[thisChunk].updateMesh();
+                chunk::updateNeighbours(chunkTempX, cyy, chunkTempZ);
+                chunkMap[thisChunk].lock = 0;
+            }
+
+            // i += compressedSize;
             break;
         case 0x34:
             compressedSize = net::convertShort(
@@ -285,3 +389,5 @@ void runMultiplayer()
     memset(receivedData, 0, sizeof(receivedData));
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 }
+
+#endif

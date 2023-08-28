@@ -4,21 +4,15 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/usr/include",
-                "/usr/include/GL",
-                "/usr/include/SDL2"
+                "/usr/include"
             ],
-            "defines": ["GLEW_STATIC"],
+            "defines": [],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64",
             "browse": {
-                "path": [
-                    "${workspaceFolder}/**",
-                    "/usr/include",
-                    "/usr/include/GL"
-                ],
+                "path": [],
                 "limitSymbolsToIncludedHeaders": true
             }
         }

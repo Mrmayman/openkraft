@@ -11,9 +11,12 @@
 #include <arpa/inet.h>
 #endif
 
+#include <zlib.h>
+
 #include <unordered_map>
 #include <cstring>
 #include <cstdint>
+#include <vector>
 
 namespace net
 {
@@ -344,5 +347,4 @@ namespace net
     }
 
 }
-
 #endif
