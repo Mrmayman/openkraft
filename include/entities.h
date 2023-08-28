@@ -2,10 +2,7 @@
 #define ENTITIES_H
 
 #include <vector>
-#include <cstddef>
-
-#include <SDL2/SDL_opengl.h>
-#include <GL/glu.h>
+// #include <cstddef>
 
 class Entity
 {
@@ -54,9 +51,6 @@ class EntityPlayer : public Entity {
     void draw() override;
     void tick() override;
 };
-
-extern Entity *entities[1024];
-extern Entity *commonEntities[1024];
 
 void tickEntities();
 

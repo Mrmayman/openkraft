@@ -9,12 +9,11 @@
 #include <mutex>
 #include <random>
 
-#include "FastNoiseLite.h"
+#include "../lib/FastNoiseLite.h"
 
-#include "facedraw.h"
-#include "environment.h"
-#include "blocktexdef.h"
-#include "chunk.h"
+#include "../include/facedraw.h"
+#include "../include/blocktexdef.h"
+#include "../include/chunk.h"
 
 GLuint texAtlas;
 FastNoiseLite noise;
@@ -27,6 +26,10 @@ std::mutex vectorMutex;
 std::vector<ChunkCoordinate> chunksToUpdate;
 
 bool isMultiplayer = 0;
+
+extern bool quit;
+extern float cameraX, cameraY, cameraZ;
+extern float mouseX, mouseY;
 
 int getRandomIntBetween1And2() {
     std::random_device rd;

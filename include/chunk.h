@@ -12,11 +12,10 @@
 #include <mutex>
 #include <random>
 
-#include "FastNoiseLite.h"
+#include "../lib/FastNoiseLite.h"
 
-#include "facedraw.h"
-#include "environment.h"
-#include "blocktexdef.h"
+#include "../include/facedraw.h"
+#include "../include/blocktexdef.h"
 
 int getRandomIntBetween1And2();
 extern std::mutex chunkMapMutex;
