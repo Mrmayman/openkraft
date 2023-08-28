@@ -1,5 +1,4 @@
-#ifndef FACEDRAW_H
-#define FACEDRAW_H
+#pragma once
 
 #include <vector>
 #include <ostream>
@@ -152,5 +151,3 @@ inline void right(float x, float y, float z, int textureIDtemp, std::vector<GLfl
 
 
 }
-
-#endif

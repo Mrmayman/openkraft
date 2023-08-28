@@ -210,27 +210,15 @@ void Entity::tick()
 
 bool Entity::colliding()
 {
-    /*int64_t getx = int64_t(floor(x));
-    int64_t gety = int64_t(floor(y));
-    int64_t getz = int64_t(floor(z));
-    try {
-        Chunk& tempChunk = chunkMap.at(ChunkCoordinate(floor(getx/32), floor(gety/32), floor(getz/32)));
-        return tempChunk.blockData[(getx % 32 + 32) % 32][(gety % 32 + 32) % 32][(getz % 32 + 32) % 32] > 0;
-    } catch(const std::out_of_range& e) {
-        return 0;
-    }*/
-    //    bool isColliding = 0;
     try
     {
         Chunk &tempChunk = chunkMap.at(ChunkCoordinate(floor(x / 32), floor(y / 32), floor(z / 32)));
-        //        isColliding = isColliding || myChunk.blockData[(getx % 32 + 32) % 32][(gety % 32 + 32) % 32][(getz % 32 + 32) % 32] > 0;
         return blockConfig[tempChunk.blockData[(int64_t(floor(x)) % 32 + 32) % 32][(int64_t(floor(y)) % 32 + 32) % 32][(int64_t(floor(z)) % 32 + 32) % 32]].collisionType > 0;
     }
     catch (const std::out_of_range &e)
     {
         // std::cerr << "[error] Nonexistent chunk for collision : " << floor(x/32) << ", " << floor(y/32) << ", " << floor(z/32) << "\n";
     }
-    //    return isColliding;
     return 0;
 }
 

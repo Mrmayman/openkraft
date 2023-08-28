@@ -1,5 +1,4 @@
-#ifndef BLOCKTEXDEF_H
-#define BLOCKTEXDEF_H
+#pragma once
 
 class BlockConfig
 {
@@ -133,5 +132,3 @@ const BlockConfig blockConfig[] = {
     {1, 1, 1},
     {1, 1, 1},
 };
-
-#endif

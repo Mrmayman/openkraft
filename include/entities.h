@@ -1,5 +1,4 @@
-#ifndef ENTITIES_H
-#define ENTITIES_H
+#pragma once
 
 #include <vector>
 // #include <cstddef>
@@ -53,5 +52,3 @@ class EntityPlayer : public Entity {
 };
 
 void tickEntities();
-
-#endif

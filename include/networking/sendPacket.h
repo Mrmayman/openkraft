@@ -1,8 +1,10 @@
+#pragma once
+
 #include <vector>
 #include <cstdint>
 
 #include "networkingFunctions.h"
-#include "entities.h"
+#include "../entities.h"
 
 extern int mySocket;
 extern bool loggedIn;

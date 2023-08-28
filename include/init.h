@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
 
@@ -7,7 +9,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <GL/glu.h>
 
-#include "networkingFunctions.h"
+#include "networking/networkingFunctions.h"
 #include "graphics.h"
 
 extern bool isMultiplayer;

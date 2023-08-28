@@ -1,5 +1,4 @@
-#ifndef NETCODE_H
-#define NETCODE_H
+#pragma once
 
 #ifdef _WIN32 // Windows
 #include <winsock2.h>
@@ -347,4 +346,3 @@ namespace net
     }
 
 }
-#endif

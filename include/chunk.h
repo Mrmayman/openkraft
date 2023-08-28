@@ -1,5 +1,4 @@
-#ifndef CHUNK_H
-#define CHUNK_H
+#pragma once
 
 #include <GL/glew.h>
 #include <GL/glu.h>
@@ -136,5 +135,3 @@ void unload();
 
 extern std::mutex vectorMutex;
 extern std::vector<ChunkCoordinate> chunksToUpdate;
-
-#endif // CHUNK_H

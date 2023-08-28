@@ -1,29 +1,12 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
-#include <GL/glu.h>
 
 #include <iostream>
-#include <cstdio>
-#include <cmath>
-#include <string>
-#include <csignal>
-#include <exception>
-#include <iomanip>
 
-#include <thread>
-#include <chrono>
-#include <mutex>
-#include <atomic>
-
-#include "../include/chunk.h"
-#include "../include/entities.h"
-#include "../include/facedraw.h"
 #include "../include/init.h"
 #include "../include/graphics.h"
-#include "../include/networkingMain.h"
+#include "../include/networking/networkingMain.h"
 
 float cameraX = 0;
 float cameraY = 0;
@@ -38,6 +21,8 @@ float mouseX = 0;
 float mouseY = 0;
 
 float delta = 1;
+
+extern bool isMultiplayer;
 
 void manageGame()
 {

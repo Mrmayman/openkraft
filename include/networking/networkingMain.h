@@ -1,15 +1,14 @@
-#ifndef NETWORKINGMAIN_H
-#define NETWORKINGMAIN_H
+#pragma once
 
 #include <vector>
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <iomanip>
 
 #include "networkingFunctions.h"
 #include "sendPacket.h"
-#include "entities.h"
-#include "chunk.h"
+#include "../chunk.h"
 
 int mySocket = -1;
 bool loggedIn = 0;
@@ -17,6 +16,7 @@ bool loggedIn = 0;
 extern bool quit;
 extern float cameraX, cameraY, cameraZ;
 
+class Entity;
 extern Entity *commonEntities[1024];
 
 uint8_t receivedData[net::bufferSize];
@@ -27,7 +27,6 @@ void runMultiplayer()
 {
     uint8_t receivedData[net::bufferSize];
     int bytesRead = 0;
-    memset(receivedData, 0, sizeof(receivedData));
     if (!net::receive(bytesRead, receivedData, mySocket))
     {
         std::cerr << "[error] Connection closed or error occurred\n";
@@ -132,9 +131,9 @@ void runMultiplayer()
             break;
         case 0x14:
             std::cerr << "Packet : Spawn Player\n";
-            /*length = (static_cast<uint16_t>(receivedData[i+1+4]) << 8) |
-                      static_cast<uint16_t>(receivedData[i+2+4]);
-            i += length;*/
+            length = (static_cast<uint16_t>(receivedData[i + 1 + 4]) << 8) |
+                     static_cast<uint16_t>(receivedData[i + 2 + 4]);
+            i += length;
             break;
         case 0x18:
             std::cerr << "Broken Packet : Spawn Mob\n";
@@ -189,7 +188,6 @@ void runMultiplayer()
                 receivedData[i + 16],
                 receivedData[i + 17]);
 
-            // std::cout << bytesRead << ", " << compressedSize << "\n";
             std::cout << "started chunk " << compressedSize << "\n";
             if (compressedSize > 1000000)
             {
@@ -202,7 +200,6 @@ void runMultiplayer()
             {
                 if (i >= bytesRead)
                 {
-                    // throw std::runtime_error("The chunk is cut up :(");
                     std::cout << "Cut up chunk, reading next packet "
                               << "\n";
                     sendPacket::alive();
@@ -210,7 +207,6 @@ void runMultiplayer()
                     {
                         return;
                     }
-                    // break;
                     std::this_thread::sleep_for(std::chrono::milliseconds(8));
                     i = 0;
                     memset(receivedData, 0, sizeof(receivedData));
@@ -221,11 +217,9 @@ void runMultiplayer()
                         return;
                     }
                 }
-                // std::cout << "reading chunk data " << i << "\n";
                 compressedData.push_back(receivedData[i]);
                 i++;
             }
-            // std::cout << "finished chunk\n";
             i -= 18;
 
             if (!net::decompress(compressedData, decompressedData))
@@ -244,8 +238,6 @@ void runMultiplayer()
                     abs(chunkTempZ - (cameraZ / 32)) <= chunk::renderDistance)
                 {
                     Chunk genTempChunk = Chunk(chunkTempX, chunkTempY, chunkTempZ, 0);
-                    // genTempChunk.fill(1);
-                    // genTempChunk.updateMesh();
                     genTempChunk.lock = 1;
                     chunk::write(genTempChunk);
                     if (!isArrayFilledWithZeroes(genTempChunk.blockData))
@@ -267,16 +259,12 @@ void runMultiplayer()
                         int64_t chunkTempY = floor(float(cy) / 32.0f);
                         int64_t chunkTempZ = floor(float(chunkZ) / 32.0f);
                         ChunkCoordinate chunkCoord(chunkTempX, chunkTempY, chunkTempZ);
-                        // std::cout << ((chunkX + cx) % 32 + 32) % 32 << ", " << ((cy) % 32 + 32) % 32 << ", " << ((chunkZ + cz) % 32 + 32) % 32 << "\n";
                         if (index < int(decompressedData.size()))
                         {
                             chunkMap[chunkCoord].blockData[((chunkX + cx) % 32 + 32) % 32]
                                                           [((cy) % 32 + 32) % 32]
                                                           [((chunkZ + cz) % 32 + 32) % 32] = int(decompressedData[index]);
                         }
-                        // chunkMap[chunkCoord].updateMesh();
-                        // chunk::updateNeighbours(chunkTempX, chunkTempY, chunkTempZ);
-                        // std::cout << int(decompressedData[index]) << "\n";
                     }
                 }
             }
@@ -290,7 +278,6 @@ void runMultiplayer()
                 chunkMap[thisChunk].lock = 0;
             }
 
-            // i += compressedSize;
             break;
         case 0x34:
             compressedSize = net::convertShort(
@@ -389,5 +376,3 @@ void runMultiplayer()
     memset(receivedData, 0, sizeof(receivedData));
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
 }
-
-#endif

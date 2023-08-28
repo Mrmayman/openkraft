@@ -1,5 +1,4 @@
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -323,5 +322,3 @@ void buildMeshes()
         if(shouldBeDeleted) { chunksToUpdate.pop_back(); }
     }
 }
-
-#endif
