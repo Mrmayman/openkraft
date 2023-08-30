@@ -402,41 +402,6 @@ static inline int8_t isEqualTo31(int8_t value)
     }
 }
 
-/*blockData, bottomChunk, i, j, k, 2, 0
-
-currentConfig.renderModel == 2 ||
-                        currentConfig.renderModel == 3 ||
-                        (j == 0 && bottomChunk.blockData[i][31][k] == 0) ||
-                        (j > 0 && blockData[i][j - 1][k] == 0)
-
-    int16_t currentBlock = blockData[cullX][cullY][cullZ];
-    BlockConfig currentConfig(1, 1, 1);
-    if (currentBlock > 0 && currentBlock < int16_t(sizeof(blockConfig) / sizeof(BlockConfig)))
-    {
-        currentConfig = blockConfig[currentBlock];
-    }
-    bool result = currentConfig.renderModel == 2 ||
-                  currentConfig.renderModel == 3;
-    int8_t tempValue;
-    if (value == 0)
-    {
-        tempValue = 31;
-    }
-    else
-    {
-        tempValue = 0;
-    }
-        if (cullY == value)
-        {
-            result = result || (blockConfig[compareChunk.blockData[cullX][tempValue][cullZ]].renderModel != currentConfig.renderModel);
-        }
-        else
-        {
-            std::cout << cullX << ", " << cullY + isEqualTo31(value) << ", " << cullZ << ", " << blockData[cullX][cullY + isEqualTo31(value)][cullZ] << "\n";
-            result = result || (blockConfig[blockData[cullX][cullY + isEqualTo31(value)][cullZ]].renderModel != currentConfig.renderModel);
-        }
-    return result;*/
-
 inline bool shouldBeDrawn(int16_t (&blockData)[32][32][32], const Chunk &compareChunk, int8_t cullX, int8_t cullY, int8_t cullZ, int8_t whichCoordinate, int8_t value)
 {
     int16_t currentBlock = blockData[cullX][cullY][cullZ];
@@ -475,12 +440,11 @@ inline bool shouldBeDrawn(int16_t (&blockData)[32][32][32], const Chunk &compare
         }
         else
         {
-            // std::cout << cullX << ", " << cullY + isEqualTo31(value) << ", " << cullZ << ", " << blockData[cullX][cullY + isEqualTo31(value)][cullZ] << "\n";
             result = result || (blockConfig[blockData[cullX][cullY + isEqualTo31(value)][cullZ]].renderModel != currentConfig.renderModel);
         }
         break;
     case 3:
-        if (cullX == value)
+        if (cullZ == value)
         {
             result = result || (blockConfig[compareChunk.blockData[cullX][cullY][tempValue]].renderModel != currentConfig.renderModel);
         }
@@ -489,6 +453,36 @@ inline bool shouldBeDrawn(int16_t (&blockData)[32][32][32], const Chunk &compare
             result = result || (blockConfig[blockData[cullX][cullY][cullZ + isEqualTo31(value)]].renderModel != currentConfig.renderModel);
         }
         break;
+    /*case 1:
+        if (cullX == value)
+        {
+            result = result || (compareChunk.blockData[tempValue][cullY][cullZ] == 0);
+        }
+        else
+        {
+            result = result || (blockData[cullX + isEqualTo31(value)][cullY][cullZ] == 0);
+        }
+        break;
+    case 2:
+        if (cullY == value)
+        {
+            result = result || (compareChunk.blockData[cullX][tempValue][cullZ] == 0);
+        }
+        else
+        {
+            result = result || (blockData[cullX][cullY + isEqualTo31(value)][cullZ] == 0);
+        }
+        break;
+    case 3:
+        if (cullZ == value)
+        {
+            result = result || (compareChunk.blockData[cullX][cullY][tempValue] == 0);
+        }
+        else
+        {
+            result = result || (blockData[cullX][cullY][cullZ + isEqualTo31(value)] == 0);
+        }
+        break;*/
     default:
         std::cerr << "[error] Invalid use of function shouldBeDrawn()\n";
         break;
@@ -563,10 +557,7 @@ void Chunk::updateMesh()
                             0.65 * float((grassb * (currentBlock != 2)) + (currentBlock == 2)),
                             1);
                     }
-                    if (currentConfig.renderModel == 2 ||
-                        currentConfig.renderModel == 3 ||
-                        (j == 31 && blockConfig[topChunk.blockData[i][0][k]].renderModel != currentConfig.renderModel) ||
-                        (j < 31 && blockConfig[blockData[i][j + 1][k]].renderModel != currentConfig.renderModel))
+                    if (shouldBeDrawn(blockData, topChunk, i, j, k, 2, 31))
                     {
                         face::bottom(
                             i, j + 1, k,
@@ -577,10 +568,7 @@ void Chunk::updateMesh()
                             1.0 * grassb,
                             1);
                     }
-                    if (currentConfig.renderModel == 2 ||
-                        currentConfig.renderModel == 3 ||
-                        (i == 0 && rightChunk.blockData[31][j][k] == 0) ||
-                        (i > 0 && blockData[i - 1][j][k] == 0))
+                    if (shouldBeDrawn(blockData, rightChunk, i, j, k, 1, 0))
                     {
                         face::left(
                             i, j, k,
@@ -591,10 +579,7 @@ void Chunk::updateMesh()
                             0.8 * float((grassb * (currentBlock != 2)) + (currentBlock == 2)),
                             1);
                     }
-                    if (currentConfig.renderModel == 2 ||
-                        currentConfig.renderModel == 3 ||
-                        (i == 31 && leftChunk.blockData[0][j][k] == 0) ||
-                        (i < 31 && blockData[i + 1][j][k] == 0))
+                    if (shouldBeDrawn(blockData, leftChunk, i, j, k, 1, 31))
                     {
                         face::right(
                             i, j, k,
@@ -605,10 +590,7 @@ void Chunk::updateMesh()
                             0.8 * float((grassb * (currentBlock != 2)) + (currentBlock == 2)),
                             1);
                     }
-                    if (currentConfig.renderModel == 2 ||
-                        currentConfig.renderModel == 3 ||
-                        (k == 0 && backChunk.blockData[i][j][31] == 0) ||
-                        (k > 0 && blockData[i][j][k - 1] == 0))
+                    if (shouldBeDrawn(blockData, backChunk, i, j, k, 3, 0))
                     {
                         face::front(
                             i, j, k,
@@ -619,10 +601,7 @@ void Chunk::updateMesh()
                             0.9 * float((grassb * (currentBlock != 2)) + (currentBlock == 2)),
                             1);
                     }
-                    if (currentConfig.renderModel == 2 ||
-                        currentConfig.renderModel == 3 ||
-                        (k == 31 && frontChunk.blockData[i][j][0] == 0) ||
-                        (k < 31 && blockData[i][j][k + 1] == 0))
+                    if (shouldBeDrawn(blockData, frontChunk, i, j, k, 3, 31))
                     {
                         face::back(
                             i, j, k,
