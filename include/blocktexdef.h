@@ -33,7 +33,7 @@ public:
 };
 
 const BlockConfig blockConfig[] = {
-    {0, 1, 1},       // air
+    {0, 0, 1},       // air
     {1, 1, 2},       // stone
     {1, 1, 1, 3, 4}, // grass block
     {1, 1, 3},       // dirt

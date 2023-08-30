@@ -1,0 +1,159 @@
+In file included from src/../include/graphics.h:13,
+                 from src/../include/init.h:13,
+                 from src/main.cpp:7:
+src/../include/entities.h: In constructor ‘Entity::Entity()’:
+src/../include/entities.h:26:5: error: ‘Entity::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   26 |     Entity() { buildBuffer(); }
+      |     ^~~~~~
+src/../include/entities.h:26:5: error: ‘Entity::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/entities.h:26:5: error: ‘Entity::entityVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/entities.h:26:5: error: ‘Entity::entityIBO’ should be initialized in the member initialization list [-Werror=effc++]
+In file included from src/../include/chunk.h:14,
+                 from src/../include/graphics.h:14,
+                 from src/../include/init.h:13,
+                 from src/main.cpp:7:
+src/../include/../lib/FastNoiseLite.h: In constructor ‘FastNoiseLite::FastNoiseLite(int)’:
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mSeed’ should be initialized in the member initialization list [-Werror=effc++]
+  114 |     FastNoiseLite(int seed = 1337)
+      |     ^~~~~~~~~~~~~
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFrequency’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mNoiseType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mRotationType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mTransformType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFractalType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mOctaves’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mLacunarity’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mGain’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mWeightedStrength’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mPingPongStrength’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFractalBounding’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularDistanceFunction’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularReturnType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularJitterModifier’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mDomainWarpType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mWarpTransformType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mDomainWarpAmp’ should be initialized in the member initialization list [-Werror=effc++]
+In file included from src/../include/graphics.h:14,
+                 from src/../include/init.h:13,
+                 from src/main.cpp:7:
+src/../include/chunk.h: In constructor ‘Chunk::Chunk()’:
+src/../include/chunk.h:71:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   71 |     Chunk() {
+      |     ^~~~~
+src/../include/chunk.h:71:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:71:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:71:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h: In constructor ‘Chunk::Chunk(int64_t, int64_t, int64_t)’:
+src/../include/chunk.h:79:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   79 |     Chunk(int64_t inx, int64_t iny, int64_t inz) : x(inx), y(iny), z(inz)
+      |     ^~~~~
+src/../include/chunk.h:79:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:79:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:79:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h: In constructor ‘Chunk::Chunk(int64_t, int64_t, int64_t, int16_t)’:
+src/../include/chunk.h:85:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   85 |     Chunk(int64_t inx, int64_t iny, int64_t inz, int16_t tile) : x(inx), y(iny), z(inz)
+      |     ^~~~~
+src/../include/chunk.h:85:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:85:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:85:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+cc1plus: all warnings being treated as errors
+In file included from src/entities.cpp:6:
+src/../include/entities.h: In constructor ‘Entity::Entity()’:
+src/../include/entities.h:26:5: error: ‘Entity::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   26 |     Entity() { buildBuffer(); }
+      |     ^~~~~~
+src/../include/entities.h:26:5: error: ‘Entity::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/entities.h:26:5: error: ‘Entity::entityVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/entities.h:26:5: error: ‘Entity::entityIBO’ should be initialized in the member initialization list [-Werror=effc++]
+In file included from src/../include/chunk.h:14,
+                 from src/entities.cpp:9:
+src/../include/../lib/FastNoiseLite.h: In constructor ‘FastNoiseLite::FastNoiseLite(int)’:
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mSeed’ should be initialized in the member initialization list [-Werror=effc++]
+  114 |     FastNoiseLite(int seed = 1337)
+      |     ^~~~~~~~~~~~~
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFrequency’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mNoiseType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mRotationType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mTransformType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFractalType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mOctaves’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mLacunarity’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mGain’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mWeightedStrength’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mPingPongStrength’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFractalBounding’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularDistanceFunction’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularReturnType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularJitterModifier’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mDomainWarpType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mWarpTransformType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mDomainWarpAmp’ should be initialized in the member initialization list [-Werror=effc++]
+In file included from src/entities.cpp:9:
+src/../include/chunk.h: In constructor ‘Chunk::Chunk()’:
+src/../include/chunk.h:71:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   71 |     Chunk() {
+      |     ^~~~~
+src/../include/chunk.h:71:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:71:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:71:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h: In constructor ‘Chunk::Chunk(int64_t, int64_t, int64_t)’:
+src/../include/chunk.h:79:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   79 |     Chunk(int64_t inx, int64_t iny, int64_t inz) : x(inx), y(iny), z(inz)
+      |     ^~~~~
+src/../include/chunk.h:79:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:79:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:79:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h: In constructor ‘Chunk::Chunk(int64_t, int64_t, int64_t, int16_t)’:
+src/../include/chunk.h:85:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   85 |     Chunk(int64_t inx, int64_t iny, int64_t inz, int16_t tile) : x(inx), y(iny), z(inz)
+      |     ^~~~~
+src/../include/chunk.h:85:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:85:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:85:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+cc1plus: all warnings being treated as errors
+In file included from src/chunk.cpp:12:
+src/../lib/FastNoiseLite.h: In constructor ‘FastNoiseLite::FastNoiseLite(int)’:
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mSeed’ should be initialized in the member initialization list [-Werror=effc++]
+  114 |     FastNoiseLite(int seed = 1337)
+      |     ^~~~~~~~~~~~~
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFrequency’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mNoiseType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mRotationType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mTransformType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFractalType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mOctaves’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mLacunarity’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mGain’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mWeightedStrength’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mPingPongStrength’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mFractalBounding’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularDistanceFunction’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularReturnType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mCellularJitterModifier’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mDomainWarpType’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mWarpTransformType3D’ should be initialized in the member initialization list [-Werror=effc++]
+src/../lib/FastNoiseLite.h:114:5: error: ‘FastNoiseLite::mDomainWarpAmp’ should be initialized in the member initialization list [-Werror=effc++]
+In file included from src/chunk.cpp:16:
+src/../include/chunk.h: In constructor ‘Chunk::Chunk()’:
+src/../include/chunk.h:71:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   71 |     Chunk() {
+      |     ^~~~~
+src/../include/chunk.h:71:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:71:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:71:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h: In constructor ‘Chunk::Chunk(int64_t, int64_t, int64_t)’:
+src/../include/chunk.h:79:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   79 |     Chunk(int64_t inx, int64_t iny, int64_t inz) : x(inx), y(iny), z(inz)
+      |     ^~~~~
+src/../include/chunk.h:79:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:79:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:79:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h: In constructor ‘Chunk::Chunk(int64_t, int64_t, int64_t, int16_t)’:
+src/../include/chunk.h:85:5: error: ‘Chunk::vertices’ should be initialized in the member initialization list [-Werror=effc++]
+   85 |     Chunk(int64_t inx, int64_t iny, int64_t inz, int16_t tile) : x(inx), y(iny), z(inz)
+      |     ^~~~~
+src/../include/chunk.h:85:5: error: ‘Chunk::indices’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:85:5: error: ‘Chunk::squareVBO’ should be initialized in the member initialization list [-Werror=effc++]
+src/../include/chunk.h:85:5: error: ‘Chunk::squareIBO’ should be initialized in the member initialization list [-Werror=effc++]
+cc1plus: all warnings being treated as errors

@@ -16,7 +16,6 @@
 #include "../include/facedraw.h"
 #include "../include/blocktexdef.h"
 
-int getRandomIntBetween1And2();
 extern std::mutex chunkMapMutex;
 
 extern int seed;
@@ -24,7 +23,7 @@ extern FastNoiseLite noise;
 
 extern GLuint shaderProgram;
 
-bool isArrayFilledWithZeroes(const int16_t array[32][32][32]);
+bool isArrayFilledWithZeroes(const int16_t (&array)[32][32][32]);
 
 using std::int64_t;
 
