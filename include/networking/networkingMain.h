@@ -244,7 +244,7 @@ void runMultiplayer()
                     {
                         chunk::updateNeighbours(chunkTempX, chunkTempY, chunkTempZ);
                     }
-                    chunkMap[ChunkCoordinate(chunkTempX, chunkTempY, chunkTempZ)].lock = 0;
+                    chunkMap[ChunkCoordinate(chunkTempX, chunkTempY, chunkTempZ)]->lock = 0;
                 }
             }
 
@@ -261,7 +261,7 @@ void runMultiplayer()
                         ChunkCoordinate chunkCoord(chunkTempX, chunkTempY, chunkTempZ);
                         if (index < int(decompressedData.size()))
                         {
-                            chunkMap[chunkCoord].blockData[((chunkX + cx) % 32 + 32) % 32]
+                            chunkMap[chunkCoord]->blockData[((chunkX + cx) % 32 + 32) % 32]
                                                           [((cy) % 32 + 32) % 32]
                                                           [((chunkZ + cz) % 32 + 32) % 32] = int(decompressedData[index]);
                         }
@@ -273,9 +273,9 @@ void runMultiplayer()
                 int64_t chunkTempX = floor(float(chunkX) / 32.0f);
                 int64_t chunkTempZ = floor(float(chunkZ) / 32.0f);
                 ChunkCoordinate thisChunk = ChunkCoordinate(chunkTempX, cyy, chunkTempZ);
-                chunkMap[thisChunk].updateMesh();
+                chunkMap[thisChunk]->updateMesh();
                 chunk::updateNeighbours(chunkTempX, cyy, chunkTempZ);
-                chunkMap[thisChunk].lock = 0;
+                chunkMap[thisChunk]->lock = 0;
             }
 
             break;

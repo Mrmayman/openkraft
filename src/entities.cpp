@@ -212,7 +212,7 @@ bool Entity::colliding()
 {
     try
     {
-        Chunk &tempChunk = chunkMap.at(ChunkCoordinate(floor(x / 32), floor(y / 32), floor(z / 32)));
+        Chunk &tempChunk = *chunkMap.at(ChunkCoordinate(floor(x / 32), floor(y / 32), floor(z / 32))).get();
         return blockConfig[tempChunk.blockData[(int64_t(floor(x)) % 32 + 32) % 32][(int64_t(floor(y)) % 32 + 32) % 32][(int64_t(floor(z)) % 32 + 32) % 32]].collisionType > 0;
     }
     catch (const std::out_of_range &e)

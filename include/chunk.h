@@ -9,7 +9,8 @@
 #include <stdexcept>
 #include <vector>
 #include <mutex>
-#include <random>
+// #include <random>
+#include <memory>
 
 #include "../lib/FastNoiseLite.h"
 
@@ -111,7 +112,7 @@ struct ChunkCoordinateHash {
     }
 };
 
-extern std::unordered_map<ChunkCoordinate, Chunk, ChunkCoordinateHash> chunkMap;
+extern std::unordered_map<ChunkCoordinate, std::shared_ptr<Chunk>, ChunkCoordinateHash> chunkMap;
 
 namespace chunk {
 

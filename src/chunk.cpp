@@ -13,8 +13,9 @@ GLuint texAtlas;
 FastNoiseLite noise;
 std::mutex chunkMapMutex;
 int seed = 69;
-std::unordered_map<ChunkCoordinate, Chunk, ChunkCoordinateHash> chunkMap;
 int chunk::renderDistance = 4;
+
+std::unordered_map<ChunkCoordinate, std::shared_ptr<Chunk>, ChunkCoordinateHash> chunkMap;
 
 std::mutex vectorMutex;
 std::vector<ChunkCoordinate> chunksToUpdate;
@@ -216,7 +217,7 @@ inline const Chunk &chunk::read(int64_t x, int64_t y, int64_t z)
     ChunkCoordinate coordinate(x, y, z);
     try
     {
-        return chunkMap.at(coordinate);
+        return *chunkMap.at(coordinate).get();
     }
     catch (const std::out_of_range &e)
     {
@@ -229,7 +230,7 @@ int16_t chunk::getTile(int64_t getx, int64_t gety, int64_t getz)
 {
     try
     {
-        Chunk &tempChunk = chunkMap.at(ChunkCoordinate(floor(getx / 32), floor(gety / 32), floor(getz / 32)));
+        Chunk &tempChunk = *chunkMap.at(ChunkCoordinate(floor(getx / 32), floor(gety / 32), floor(getz / 32))).get();
         return tempChunk.blockData[(getx % 32 + 32) % 32][(gety % 32 + 32) % 32][(getz % 32 + 32) % 32];
     }
     catch (const std::out_of_range &e)
@@ -245,26 +246,26 @@ void chunk::setTile(int64_t getx, int64_t gety, int64_t getz, int16_t tile)
     auto chunkIt = chunkMap.find(chunkCoord);
     if (chunkIt != chunkMap.end())
     {
-        chunkMap[chunkCoord].blockData[(getx % 32 + 32) % 32][(gety % 32 + 32) % 32][(getz % 32 + 32) % 32] = tile;
+        chunkMap[chunkCoord]->blockData[(getx % 32 + 32) % 32][(gety % 32 + 32) % 32][(getz % 32 + 32) % 32] = tile;
     }
     else if (isMultiplayer)
     {
         // std::cerr << "[error] Missing chunk for placing " << chunkCoord << "\n";
-        chunkMap[chunkCoord] = Chunk(floor(float(getx) / 32.0f), floor(float(gety) / 32.0f), floor(float(getz) / 32.0f), 0);
-        chunkMap[chunkCoord].blockData[(getx % 32 + 32) % 32][(gety % 32 + 32) % 32][(getz % 32 + 32) % 32] = tile;
+        chunkMap[chunkCoord] = std::make_shared<Chunk>(floor(float(getx) / 32.0f), floor(float(gety) / 32.0f), floor(float(getz) / 32.0f), 0);
+        chunkMap[chunkCoord]->blockData[(getx % 32 + 32) % 32][(gety % 32 + 32) % 32][(getz % 32 + 32) % 32] = tile;
     }
-    chunkMap[chunkCoord].updateMesh();
+    chunkMap[chunkCoord]->updateMesh();
 }
 
 // Write to a chunk at a coordinate
 void chunk::write(int64_t x, int64_t y, int64_t z, const Chunk &chunk)
 {
-    chunkMap[ChunkCoordinate(x, y, z)] = chunk;
+    chunkMap[ChunkCoordinate(x, y, z)] = std::make_shared<Chunk>(chunk);
 }
 
 void chunk::write(const Chunk &chunk)
 {
-    chunkMap[ChunkCoordinate(chunk.x, chunk.y, chunk.z)] = chunk;
+    chunkMap[ChunkCoordinate(chunk.x, chunk.y, chunk.z)] = std::make_shared<Chunk>(chunk);
 }
 
 // Delete a chunk based on its coordinate
@@ -278,34 +279,34 @@ void chunk::remove(int64_t x, int64_t y, int64_t z)
 void chunk::create(int64_t x, int64_t y, int64_t z)
 {
     ChunkCoordinate coordinate(x, y, z);
-    chunkMap.emplace(coordinate, Chunk(x, y, z));
+    chunkMap[coordinate] = std::make_shared<Chunk>(x, y, z);
 }
 
 void chunk::updateNeighbours(int64_t x, int64_t y, int64_t z)
 {
     if (chunkMap.count(ChunkCoordinate(x + 1, y, z)) > 0)
     {
-        chunkMap[ChunkCoordinate(x + 1, y, z)].updateMesh();
+        chunkMap[ChunkCoordinate(x + 1, y, z)]->updateMesh();
     }
     if (chunkMap.count(ChunkCoordinate(x - 1, y, z)) > 0)
     {
-        chunkMap[ChunkCoordinate(x - 1, y, z)].updateMesh();
+        chunkMap[ChunkCoordinate(x - 1, y, z)]->updateMesh();
     }
     if (chunkMap.count(ChunkCoordinate(x, y + 1, z)) > 0)
     {
-        chunkMap[ChunkCoordinate(x, y + 1, z)].updateMesh();
+        chunkMap[ChunkCoordinate(x, y + 1, z)]->updateMesh();
     }
     if (chunkMap.count(ChunkCoordinate(x, y - 1, z)) > 0)
     {
-        chunkMap[ChunkCoordinate(x, y - 1, z)].updateMesh();
+        chunkMap[ChunkCoordinate(x, y - 1, z)]->updateMesh();
     }
     if (chunkMap.count(ChunkCoordinate(x, y, z + 1)) > 0)
     {
-        chunkMap[ChunkCoordinate(x, y, z + 1)].updateMesh();
+        chunkMap[ChunkCoordinate(x, y, z + 1)]->updateMesh();
     }
     if (chunkMap.count(ChunkCoordinate(x, y, z - 1)) > 0)
     {
-        chunkMap[ChunkCoordinate(x, y, z - 1)].updateMesh();
+        chunkMap[ChunkCoordinate(x, y, z - 1)]->updateMesh();
     }
 }
 
@@ -325,7 +326,7 @@ void chunk::loadChunk(int64_t x, int64_t y, int64_t z)
             chunk::updateNeighbours(x, y, z);
             // std::cout << "[info] Finished updating neighbour meshes\n";
         }
-        chunkMap[ChunkCoordinate(x, y, z)].lock = 0;
+        chunkMap[ChunkCoordinate(x, y, z)]->lock = 0;
         if (quit)
         {
             return;
@@ -363,7 +364,8 @@ void chunk::unload()
             std::abs(tempCoord.z - (cameraZ / 32)) > renderDistance)
         {
             // TODO Saving to disk
-            chunkMap[tempCoord].lock = 1;
+            chunkMap[tempCoord]->lock = 1;
+            chunkMap[tempCoord].reset();
             it = chunkMap.erase(it); // Erase and get the next valid iterator
             // std::cout << "[info] Unloading Chunk " << tempCoord << "\n";
         }

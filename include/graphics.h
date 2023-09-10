@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <memory>
 
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
@@ -244,42 +245,16 @@ void render()
     // Enable Z-clipping by setting the depth function
     glDepthFunc(GL_LEQUAL);
 
-    // Bind the VBO and IBO for drawing
-    /*glBindBuffer(GL_ARRAY_BUFFER, SkyVBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SkyIBO);
-
-    // Set up vertex and texture coordinate pointers
-    glVertexPointer(3, GL_FLOAT, 9 * sizeof(GLfloat), 0);
-    glTexCoordPointer(2, GL_FLOAT, 9 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-
-    glBindTexture(GL_TEXTURE_2D, texAtlas);
-
-    //GLint colorAttributeLocation = glGetAttribLocation(shaderProgram, "inColor");
-    //glVertexAttribPointer(colorAttributeLocation, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
-    //glEnableVertexAttribArray(colorAttributeLocation);
-
-    glPushMatrix();
-    glTranslatef(cameraX,cameraY,cameraZ);
-    glScalef((chunk::renderDistance * 96), (chunk::renderDistance * 10), (chunk::renderDistance * 96));
-    // Draw the entity using the IBO
-    glDrawElements(GL_TRIANGLES, SkyIndices.size(), GL_UNSIGNED_INT, 0);
-
-    glPopMatrix();
-    //glDisableVertexAttribArray(colorAttributeLocation);
-    // Unbind the VBO and IBO after drawing
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);*/
-
     std::lock_guard<std::mutex> lock(chunkMapMutex);
-    for (std::pair<const ChunkCoordinate, Chunk>& i : chunkMap) {
+    for (std::pair<const ChunkCoordinate, std::shared_ptr<Chunk>>& i : chunkMap) {
         if(abs((i.first.x * 32) - cameraX)/32 > chunk::renderDistance ||
         abs((i.first.y * 32) - cameraY)/32 > chunk::renderDistance ||
         abs((i.first.z * 32) - cameraZ)/32 > chunk::renderDistance) {
             //std::cerr << "[error] Invalid Chunk " << i.first << "\n";
-        } else if(i.second.lock) {
+        } else if(i.second->lock) {
             //std::cout << "[info] Skipped chunk " << i.first << "\n";
         } else {
-            i.second.draw();
+            i.second->draw();
         }
     }
     tickEntities();
@@ -298,7 +273,7 @@ void buildMeshes()
     for (int i = (chunksToUpdate.size() - 1); i >= 0; i--) {
         bool shouldBeDeleted = 1;
         try {
-            Chunk& myChunk = chunkMap.at(chunksToUpdate[i]);
+            Chunk& myChunk = *chunkMap.at(chunksToUpdate[i]).get();
             if(myChunk.lock == 1) {
                 shouldBeDeleted = 1;
             } else {
