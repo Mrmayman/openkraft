@@ -1,37 +1,16 @@
 #pragma once
 
-#include <iostream>
-#include <vector>
-
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_ttf.h>
 #include <GL/glu.h>
 
-#include "networking/networkingFunctions.h"
-#include "graphics.h"
+#include "main.h"
+#include "../chunk.h"
 
-extern bool isMultiplayer;
-extern int mySocket;
-
-void cleanup()
-{
-    if (isMultiplayer)
-    {
-        std::vector<uint8_t> quitData = {0xff};
-        net::appendString16("Quitting", quitData);
-    }
-
-    for (int i = 0; i < int(sizeof(entities) / (sizeof(Entity))); i++) {
-        delete entities[i];
-    }
-    SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-void buildShader()
+void GameRenderer::buildShader()
 {
     const char *vertexShaderSource = R"(
 #version 120
@@ -100,34 +79,12 @@ void main() {
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
-
-    /*const float SkyColorR = 133.0f / 256.0f;
-    const float SkyColorG = 174.0f / 256.0f;
-    const float SkyColorB = 256.0f / 256.0f;
-    const float SkyColorA = 1.0f;
-
-    const float VoidColorR = 56.0f / 256.0f;
-    const float VoidColorG = 62.0f / 256.0f;
-    const float VoidColorB = 189.0f / 256.0f;
-    const float VoidColorA = 1.0f;
-
-    face::top(-0.5f,0.5f,-0.5f,0,SkyVertices,SkyIndices,SkyColorR,SkyColorG,SkyColorB,SkyColorA);
-    face::bottom(-0.5f,-0.5f,-0.5f,0,SkyVertices,SkyIndices,VoidColorR,VoidColorG,VoidColorB,VoidColorA);
-    glGenBuffers(1, &SkyVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, SkyVBO);
-    glBufferData(GL_ARRAY_BUFFER, SkyVertices.size() * sizeof(GLfloat), &SkyVertices[0], GL_STATIC_DRAW);
-    // Generate and bind the IBO
-    glGenBuffers(1, &SkyIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SkyIBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, SkyIndices.size() * sizeof(GLuint), &SkyIndices[0], GL_STATIC_DRAW);
-    // Unbind the VBO and IBO after creating them
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);*/
 }
 
-bool initMultiplayer()
+bool GameRenderer::initMultiplayer()
 {
-    if (isMultiplayer)
+    extern int mySocket;
+    if (myRenderer.isMultiplayer)
     {
         mySocket = net::init();
         if (net::connect("127.0.0.1", 25565, mySocket) != 0)
@@ -143,14 +100,14 @@ bool initMultiplayer()
     return true;
 }
 
-bool initOpenGL()
+bool GameRenderer::initOpenGL()
 {
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
 
     // Enable backface culling
-    //glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     // Set up the 3D cube and camera transformations
     glMatrixMode(GL_PROJECTION);
@@ -161,18 +118,19 @@ bool initOpenGL()
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
     // Set the culling mode to cull back-facing triangles
-    //glCullFace(GL_BACK);
+    // glCullFace(GL_BACK);
 
     // Set the front face to be defined by vertices in counter-clockwise order
     glFrontFace(GL_CW);
-    gluPerspective(cameraFOV, (GLfloat)800 / (GLfloat)600, 0.1f, (chunk::renderDistance * 32) + 32);
+    gluPerspective(camera.FOV, (GLfloat)800 / (GLfloat)600, 0.1f, (chunk::renderDistance * 32) + 32);
 
     return true;
 }
 
-bool initSDL()
+bool GameRenderer::initSDL()
 {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
@@ -181,21 +139,24 @@ bool initSDL()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    window = SDL_CreateWindow("OpenKraft Alpha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_RENDERER_PRESENTVSYNC );
-    if (window == NULL) {
+    window = SDL_CreateWindow("OpenKraft Alpha", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_RENDERER_PRESENTVSYNC);
+    if (window == NULL)
+    {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
 
     context = SDL_GL_CreateContext(window);
-    if (context == NULL) {
+    if (context == NULL)
+    {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "OpenGL context could not be created! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
 
     // Initialize GLEW after creating the OpenGL context
     GLenum glewStatus = glewInit();
-    if (glewStatus != GLEW_OK) {
+    if (glewStatus != GLEW_OK)
+    {
         // GLEW initialization failed
         // Handle the error here
         std::cerr << "GLEW could not be initialized!\n";
@@ -210,33 +171,152 @@ bool initSDL()
     return true;
 }
 
-bool initFont()
+bool GameRenderer::initFont()
 {
-    if(TTF_Init() == -1) {
+    if (TTF_Init() == -1)
+    {
         std::cerr << "Error - Failed to start up SDL_ttf font renderer\n";
         return false;
     }
 
     font = TTF_OpenFont((GamePath + std::string("fonts/minecraft.otf")).c_str(), 28);
-    if(font == nullptr) {
+    if (font == nullptr)
+    {
         std::cerr << "Error loading font: " << TTF_GetError() << "\n";
         return false;
     }
     return true;
 }
 
-bool initGame()
+GLuint GameRenderer::LoadShader(GLenum type, const char *source)
 {
-    if(!(initSDL() && initOpenGL() && initFont() && initMultiplayer()))
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+
+    // Check compilation status
+    GLint compileStatus;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
+    if (compileStatus == GL_FALSE)
     {
-        return false;
+        GLint logLength;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+
+        std::vector<GLchar> errorLog(logLength);
+        glGetShaderInfoLog(shader, logLength, NULL, &errorLog[0]);
+
+        std::cerr << "Shader compilation error:\n"
+                  << &errorLog[0] << "\n";
+
+        // Handle the error, perhaps by cleaning up and returning an error code
+
+        // Delete the shader
+        glDeleteShader(shader);
+
+        return 0; // Or some error code
     }
 
-    noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    noise.SetSeed(seed);
-    texAtlas = loadTexture("terrain.png");
+    return shader;
+}
 
-    buildShader();
+void GameRenderer::drawText(int x, int y, const std::string &text, SDL_Color color)
+{
+    SDL_Surface *tempSurface = TTF_RenderText_Solid_Wrapped(font, text.c_str(), color, 800);
+    if (!tempSurface)
+    {
+        // Error handling if the text rendering failed
+        std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
+        return;
+    }
 
-    return true;
+    // SDL_SetSurfaceBlendMode(tempSurface, SDL_BLENDMODE_NONE);
+    SDL_Surface *textSurface = SDL_ConvertSurfaceFormat(tempSurface, SDL_PIXELFORMAT_RGBA8888, 0);
+    SDL_FreeSurface(tempSurface);
+
+    GLuint textTextureID;
+    glGenTextures(1, &textTextureID);
+    glBindTexture(GL_TEXTURE_2D, textTextureID);
+    // std::cout << textSurface->w << ", " << textSurface->h << "\n";
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textSurface->w, textSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, textSurface->pixels);
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // Enable alpha blending for the text
+    glEnable(GL_BLEND);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.1f);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+
+    extern int windowWidth;
+    extern int windowHeight;
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, windowWidth, windowHeight, 0, -1, 1);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // std::cout << windowWidth << "\n";
+
+    // Draw the text using OpenGL quads
+    glColor3f(1.0f, 1.0f, 1.0f); // Set text color
+    glBegin(GL_QUADS);
+    glTexCoord2f(0, 0);
+    glVertex2f(x, y);
+    glTexCoord2f(1, 0);
+    glVertex2f((x + textSurface->w), y);
+    glTexCoord2f(1, 1);
+    glVertex2f((x + textSurface->w), y + textSurface->h);
+    glTexCoord2f(0, 1);
+    glVertex2f(x, y + textSurface->h);
+    glEnd();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
+    // Clean up the texture and surface
+    glDeleteTextures(1, &textTextureID);
+    SDL_FreeSurface(textSurface);
+}
+
+GLuint GameRenderer::loadTexture(const std::string &filePath)
+{
+    // Load the image using SDL_image
+    SDL_Surface *surface = IMG_Load((GamePath + filePath).c_str());
+    if (!surface)
+    {
+        // Handle image loading error
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load image: %s\n", IMG_GetError());
+        return 0; // Return an invalid texture ID
+    }
+
+    // Generate a new OpenGL texture ID
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+
+    // Bind the texture
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // Load the image data into the texture
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+
+    // Free the surface
+    SDL_FreeSurface(surface);
+    return textureID;
 }

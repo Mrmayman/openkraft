@@ -8,11 +8,11 @@
 #include "../include/facedraw.h"
 #include "../include/blocktexdef.h"
 #include "../include/chunk.h"
+#include "../include/gameRenderer/main.h"
 
-GLuint texAtlas;
-FastNoiseLite noise;
+extern GameRenderer myRenderer;
+
 std::mutex chunkMapMutex;
-int seed = 69;
 int chunk::renderDistance = 4;
 
 std::unordered_map<ChunkCoordinate, std::shared_ptr<Chunk>, ChunkCoordinateHash> chunkMap;
@@ -20,10 +20,7 @@ std::unordered_map<ChunkCoordinate, std::shared_ptr<Chunk>, ChunkCoordinateHash>
 std::mutex vectorMutex;
 std::vector<ChunkCoordinate> chunksToUpdate;
 
-bool isMultiplayer = 0;
-
 extern bool quit;
-extern float cameraX, cameraY, cameraZ;
 extern float mouseX, mouseY;
 
 bool isArrayFilledWithZeroes(const int16_t (&array)[32][32][32])
@@ -51,39 +48,39 @@ void Chunk::gen()
     lock = 1;
     const int genRes = 8;
     const int genResInv = 32.0f / float(genRes);
-    // std::cout << "[info] Generating chunk " << ChunkCoordinate(x,y,z) << "\n";
+    std::cout << "[info] Generating chunk " << ChunkCoordinate(x, y, z) << "\n";
     float noises[genRes + 2][genRes + 2][genRes + 2];
     float noiseVal = 0;
 
-    float currentX = 0;
-    float currentY = 0;
-    float currentZ = 0;
+    double currentX = 0;
+    double currentY = 0;
+    double currentZ = 0;
     for (int i = -1; i < genRes + 1; i++)
     {
-        currentX = float((x * 32) + (i * genResInv));
+        currentX = double((x * 32) + (i * genResInv));
         for (int j = -1; j < genRes + 1; j++)
         {
-            currentY = float((y * 32) + (j * genResInv)) / 1.5f;
+            currentY = double((y * 32) + (j * genResInv)) / 1.5f;
             for (int k = -1; k < genRes + 1; k++)
             {
-                currentZ = float((z * 32) + (k * genResInv));
+                currentZ = double((z * 32) + (k * genResInv));
                 noiseVal = 0;
-                noiseVal += noise.GetNoise(
+                noiseVal += myRenderer.terrainNoise.GetNoise(
                                 currentX * 1.0f,
                                 currentY * 1.0f,
                                 currentZ * 1.0f) *
                             1.0f;
-                noiseVal += noise.GetNoise(
+                noiseVal += myRenderer.terrainNoise.GetNoise(
                                 currentX * 2.0f,
                                 currentY * 2.0f,
                                 currentZ * 2.0f) *
                             0.5f;
-                noiseVal += noise.GetNoise(
+                noiseVal += myRenderer.terrainNoise.GetNoise(
                                 currentX * 4.0f,
                                 currentY * 4.0f,
                                 currentZ * 4.0f) *
                             0.25f;
-                noiseVal += noise.GetNoise(
+                noiseVal += myRenderer.terrainNoise.GetNoise(
                                 currentX * 8.0f,
                                 currentY * 8.0f,
                                 currentZ * 8.0f) *
@@ -95,6 +92,11 @@ void Chunk::gen()
                 else
                 {
                     noiseVal += float(64 - ((y * 32) + (j * genResInv))) / 48.0f;
+                }
+
+                if (noiseVal > 1.0)
+                {
+                    noiseVal = 1.0;
                 }
                 noises[i + 1][j + 1][k + 1] = noiseVal;
             }
@@ -134,8 +136,19 @@ void Chunk::gen()
                 // Final interpolation along the z dimension
                 float interpolatedValue = noiseVal01 * (1.0f - zFrac) + noiseVal23 * zFrac;
 
+                /*const float caveNoiseScale = 4.0;
+
+                float caveNoiseVal = myRenderer.caveNoise.GetNoise(caveNoiseScale * float((x * 32) + i),
+                                                                   caveNoiseScale * float((y * 32) + j),
+                                                                   caveNoiseScale * float((z * 32) + k));
+                caveNoiseVal = (caveNoiseVal + 1.0) / 2.0;
+
+                interpolatedValue -= caveNoiseVal;
+
+                std::cout << caveNoiseVal << "/" << interpolatedValue << "\n";*/
+
                 // Set block data based on interpolated noise value
-                if (interpolatedValue > 0)
+                if (interpolatedValue > 0.0)
                 {
                     blockData[i][j][k] = 1;
                 }
@@ -170,10 +183,10 @@ void Chunk::draw()
     {
         return;
     }
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, squareIBO);
-    glBindBuffer(GL_ARRAY_BUFFER, squareVBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    GLint colorAttributeLocation = glGetAttribLocation(shaderProgram, "inColor");
+    GLint colorAttributeLocation = glGetAttribLocation(myRenderer.shaderProgram, "inColor");
     glVertexAttribPointer(colorAttributeLocation, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *)(5 * sizeof(GLfloat)));
     glEnableVertexAttribArray(colorAttributeLocation);
 
@@ -181,12 +194,14 @@ void Chunk::draw()
     glVertexPointer(3, GL_FLOAT, 9 * sizeof(GLfloat), 0);
     glTexCoordPointer(2, GL_FLOAT, 9 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
 
-    // Bind the TexAtlas texture before rendering
-    glBindTexture(GL_TEXTURE_2D, texAtlas);
+    // Bind the myRenderer.texAtlas texture before rendering
+    glBindTexture(GL_TEXTURE_2D, myRenderer.texAtlas);
 
     // std::cout << ChunkCoordinate(x,y,z) << "\n";
     glPushMatrix();
-    glTranslatef((x * 32.0f), (y * 32.0f), (z * 32.0f));
+    glRotatef(myRenderer.camera.rotY, 1.0f, 0.0f, 0.0f); // Rotate the scene to match the camera's pitch (vertical rotation)
+    glRotatef(myRenderer.camera.rotX, 0.0f, 1.0f, 0.0f); // Rotate the scene to match the camera's yaw (horizontal rotation)
+    glTranslatef(double(x * 32.0d) - myRenderer.camera.X, double(y * 32.0d) - myRenderer.camera.Y, double(z * 32.0d) - myRenderer.camera.Z);
     glDrawElements(GL_TRIANGLES, indicesNum, GL_UNSIGNED_INT, 0);
     glPopMatrix();
 
@@ -248,7 +263,7 @@ void chunk::setTile(int64_t getx, int64_t gety, int64_t getz, int16_t tile)
     {
         chunkMap[chunkCoord]->blockData[(getx % 32 + 32) % 32][(gety % 32 + 32) % 32][(getz % 32 + 32) % 32] = tile;
     }
-    else if (isMultiplayer)
+    else if (myRenderer.isMultiplayer)
     {
         // std::cerr << "[error] Missing chunk for placing " << chunkCoord << "\n";
         chunkMap[chunkCoord] = std::make_shared<Chunk>(floor(float(getx) / 32.0f), floor(float(gety) / 32.0f), floor(float(getz) / 32.0f), 0);
@@ -310,12 +325,18 @@ void chunk::updateNeighbours(int64_t x, int64_t y, int64_t z)
     }
 }
 
-void chunk::loadChunk(int64_t x, int64_t y, int64_t z)
+void chunk::loadChunk(long x, long y, long z)
 {
+    /*std::cout << (chunkMap.count(ChunkCoordinate(x, y, z)) == 0 &&
+                  std::abs(x - (myRenderer.camera.X / 32.0)) <= renderDistance &&
+                  std::abs(y - (myRenderer.camera.Y / 32.0)) <= renderDistance &&
+                  std::abs(z - (myRenderer.camera.Z / 32.0)) <= renderDistance)
+              << "\n";
+    std::cout << std::abs(x - (myRenderer.camera.X / 32.0)) << ", " << std::abs(y - (myRenderer.camera.Y / 32.0)) << ", " << std::abs(z - (myRenderer.camera.Z / 32.0)) << "\n";*/
     if (chunkMap.count(ChunkCoordinate(x, y, z)) == 0 &&
-        std::abs(x - (cameraX / 32)) <= renderDistance &&
-        std::abs(y - (cameraY / 32)) <= renderDistance &&
-        std::abs(z - (cameraZ / 32)) <= renderDistance)
+        std::abs(x - (myRenderer.camera.X / 32.0)) <= renderDistance &&
+        std::abs(y - (myRenderer.camera.Y / 32.0)) <= renderDistance &&
+        std::abs(z - (myRenderer.camera.Z / 32.0)) <= renderDistance)
     {
         Chunk genTempChunk = Chunk(x, y, z);
         genTempChunk.lock = 1;
@@ -337,11 +358,11 @@ void chunk::loadChunk(int64_t x, int64_t y, int64_t z)
 void chunk::manage()
 {
     // std::lock_guard<std::mutex> lock(chunkMapMutex);
-    for (int i = ((cameraX / 32) - renderDistance); i < ((cameraX / 32) + renderDistance); i++)
+    for (long i = ((myRenderer.camera.X / 32.0) - renderDistance); i < ((myRenderer.camera.X / 32.0) + renderDistance); i++)
     {
-        for (int j = ((cameraY / 32) - renderDistance); j < ((cameraY / 32) + renderDistance); j++)
+        for (long j = ((myRenderer.camera.Y / 32.0) - renderDistance); j < ((myRenderer.camera.Y / 32.0) + renderDistance); j++)
         {
-            for (int k = ((cameraZ / 32) - renderDistance); k < ((cameraZ / 32) + renderDistance); k++)
+            for (long k = ((myRenderer.camera.Z / 32.0) - renderDistance); k < ((myRenderer.camera.Z / 32.0) + renderDistance); k++)
             {
                 loadChunk(i, j, k);
                 if (quit)
@@ -359,15 +380,19 @@ void chunk::unload()
     for (auto it = chunkMap.begin(); it != chunkMap.end();)
     {
         ChunkCoordinate tempCoord = it->first;
-        if (std::abs(tempCoord.x - (cameraX / 32)) > renderDistance ||
-            std::abs(tempCoord.y - (cameraY / 32)) > renderDistance ||
-            std::abs(tempCoord.z - (cameraZ / 32)) > renderDistance)
+        /*std::cout << std::abs(tempCoord.x - long(myRenderer.camera.X / 32.0)) << ", " <<
+            std::abs(tempCoord.y - long(myRenderer.camera.Y / 32.0)) << ", " <<
+            std::abs(tempCoord.z - long(myRenderer.camera.Z / 32.0)) << "\n";*/
+
+        if (std::abs(tempCoord.x - long(myRenderer.camera.X / 32.0)) > renderDistance ||
+            std::abs(tempCoord.y - long(myRenderer.camera.Y / 32.0)) > renderDistance ||
+            std::abs(tempCoord.z - long(myRenderer.camera.Z / 32.0)) > renderDistance)
         {
             // TODO Saving to disk
             chunkMap[tempCoord]->lock = 1;
             chunkMap[tempCoord].reset();
             it = chunkMap.erase(it); // Erase and get the next valid iterator
-            // std::cout << "[info] Unloading Chunk " << tempCoord << "\n";
+            std::cout << "[info] Unloading Chunk " << tempCoord << "\n";
         }
         else
         {
@@ -378,19 +403,23 @@ void chunk::unload()
 
 void Chunk::destroyBuffers()
 {
-    glDeleteBuffers(1, &squareVBO);
-    glDeleteBuffers(1, &squareIBO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &IBO);
 }
 
-/*currentConfig.renderModel == 2 ||
-                        currentConfig.renderModel == 3 ||
-                        (i == 0 && rightChunk.blockData[31][j][k] == 0) ||
-                        (i > 0 && blockData[i - 1][j][k] == 0)
+void Chunk::updateBuffers()
+{
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
 
-currentConfig.renderModel == 2 ||
-                        currentConfig.renderModel == 3 ||
-                        (k == 31 && frontChunk.blockData[i][j][0] == 0) ||
-                        (k < 31 && blockData[i][j][k + 1] == 0)*/
+    glGenBuffers(1, &IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
 
 static inline int8_t isEqualTo31(int8_t value)
 {

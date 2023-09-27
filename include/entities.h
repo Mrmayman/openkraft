@@ -6,9 +6,9 @@
 class Entity
 {
   public:
-    float x = 0;
-    float y = 0;
-    float z = 0;
+    double x = 0;
+    double y = 0;
+    double z = 0;
 
     float rotationX = 0;
     float rotationY = 0;
@@ -51,4 +51,4 @@ class EntityPlayer : public Entity {
     void tick() override;
 };
 
-void tickEntities();
+void tickAndDrawEntities();

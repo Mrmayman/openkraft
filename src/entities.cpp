@@ -5,22 +5,21 @@
 
 #include "../include/entities.h"
 #include "../include/facedraw.h"
-
 #include "../include/chunk.h"
+#include "../include/gameRenderer/main.h"
 
-extern float delta, rotX, rotY;
-extern float cameraX, cameraY, cameraZ;
-extern float mouseX, mouseY;
+extern GameRenderer myRenderer;
+
+extern float mouseX, mouseY, delta;
 
 const Uint8 *keyboard_state;
-const float mouseSensitivity = 0.3;
 
 Entity *entities[1024];
 Entity *commonEntities[1024];
 
-static const bool collisionEnabled = 1;
+const bool collisionEnabled = 0;
 
-void tickEntities()
+void tickAndDrawEntities()
 {
     for (int e = 0; e < 1024; e++)
     {
@@ -113,7 +112,7 @@ void Entity::draw()
     glBindBuffer(GL_ARRAY_BUFFER, entityVBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, entityIBO);
 
-    GLint colorAttributeLocation = glGetAttribLocation(shaderProgram, "inColor");
+    GLint colorAttributeLocation = glGetAttribLocation(myRenderer.shaderProgram, "inColor");
     glVertexAttribPointer(colorAttributeLocation, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *)(5 * sizeof(GLfloat)));
     glEnableVertexAttribArray(colorAttributeLocation);
 
@@ -125,8 +124,8 @@ void Entity::draw()
     glEnableClientState(GL_COLOR_ARRAY);
     glColorPointer(4, GL_FLOAT, 9 * sizeof(GLfloat), (GLvoid *)(5 * sizeof(GLfloat)));
 
-    // Bind the TexAtlas texture before rendering
-    glBindTexture(GL_TEXTURE_2D, texAtlas);
+    // Bind the myRenderer.texAtlas texture before rendering
+    glBindTexture(GL_TEXTURE_2D, myRenderer.texAtlas);
 
     glPushMatrix();
     glTranslatef(x, y, z);
@@ -226,48 +225,51 @@ void EntityPlayer::tick()
 {
     keyboard_state = SDL_GetKeyboardState(NULL);
     float moveSpeed = 7.0f * (0.098 + (0.0294 * keyboard_state[SDL_SCANCODE_LCTRL]) + ((!collisionEnabled) * 0.392));
+
+    const float weirdDivideValue = 3.14/180.0;
+    
     if (keyboard_state[SDL_SCANCODE_W])
     {
-        speedZ -= moveSpeed * delta * cos(rotX);
-        speedX += moveSpeed * delta * sin(rotX);
+        speedZ -= moveSpeed * delta * cos(myRenderer.camera.rotX*weirdDivideValue);
+        speedX += moveSpeed * delta * sin(myRenderer.camera.rotX*weirdDivideValue);
     }
     if (keyboard_state[SDL_SCANCODE_S])
     {
-        speedZ += moveSpeed * delta * cos(rotX);
-        speedX -= moveSpeed * delta * sin(rotX);
+        speedZ += moveSpeed * delta * cos(myRenderer.camera.rotX*weirdDivideValue);
+        speedX -= moveSpeed * delta * sin(myRenderer.camera.rotX*weirdDivideValue);
     }
     if (keyboard_state[SDL_SCANCODE_A])
     {
-        speedZ -= moveSpeed * delta * sin(rotX);
-        speedX -= moveSpeed * delta * cos(rotX);
+        speedZ -= moveSpeed * delta * sin(myRenderer.camera.rotX*weirdDivideValue);
+        speedX -= moveSpeed * delta * cos(myRenderer.camera.rotX*weirdDivideValue);
     }
     if (keyboard_state[SDL_SCANCODE_D])
     {
-        speedZ += moveSpeed * delta * sin(rotX);
-        speedX += moveSpeed * delta * cos(rotX);
+        speedZ += moveSpeed * delta * sin(myRenderer.camera.rotX*weirdDivideValue);
+        speedX += moveSpeed * delta * cos(myRenderer.camera.rotX*weirdDivideValue);
     }
 
     move();
 
-    commonEntities[0]->rotationX += mouseX * mouseSensitivity * 0.03 * (delta * 60.0);
-    commonEntities[0]->rotationY += mouseY * mouseSensitivity * (0.03 / 1.5) * (delta * 60.0);
+    const float mouseSensitivity = 0.3;
+    commonEntities[0]->rotationX += mouseX * mouseSensitivity * (delta * 60.0);
+    commonEntities[0]->rotationY += mouseY * mouseSensitivity * (delta * 60.0);
 
-    const float rylimit = 1.56875;
-    if (rotationY > rylimit)
+    if (rotationY > 90.0)
     {
-        rotationY = rylimit;
+        rotationY = 90.0;
     }
-    if (rotationY < -rylimit)
+    if (rotationY < -90.0)
     {
-        rotationY = -rylimit;
+        rotationY = -90.0;
     }
 
     // Update Variables
-    cameraX = x;
-    cameraY = y + sizeY;
-    cameraZ = z;
-    rotX = rotationX;
-    rotY = rotationY;
+    myRenderer.camera.X = x;
+    myRenderer.camera.Y = y + sizeY;
+    myRenderer.camera.Z = z;
+    myRenderer.camera.rotX = rotationX;
+    myRenderer.camera.rotY = rotationY;
 }
 
 void EntityPlayer::buildBuffer()

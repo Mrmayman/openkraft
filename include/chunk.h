@@ -20,9 +20,7 @@
 extern std::mutex chunkMapMutex;
 
 extern int seed;
-extern FastNoiseLite noise;
-
-extern GLuint shaderProgram;
+extern FastNoiseLite terrainNoise;
 
 bool isArrayFilledWithZeroes(const int16_t (&array)[32][32][32]);
 
@@ -64,9 +62,10 @@ class Chunk {
 
     void gen();
     void fill(int16_t block);
-    void fillrand();
     void draw();
     void updateMesh();
+    void destroyBuffers();
+    void updateBuffers();
 
     Chunk() {
         fill(0);
@@ -93,10 +92,9 @@ class Chunk {
         destroyBuffers();
     }
 
-    void destroyBuffers();
     std::vector<GLfloat> vertices;
     std::vector<GLuint> indices;
-    GLuint squareVBO, squareIBO;
+    GLuint VBO, IBO;
   private:
     int indicesNum = 0;
 };

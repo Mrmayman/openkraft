@@ -4,16 +4,11 @@
 
 #include <iostream>
 
-#include "../include/init.h"
+#include "../include/gameRenderer/main.h"
+#include "../include/gameRenderer/privateFunctions.h"
 #include "../include/graphics.h"
+#include "../include/renderer.h"
 #include "../include/networking/networkingMain.h"
-
-float cameraX = 0;
-float cameraY = 0;
-float cameraZ = 0;
-
-float rotX = 0;
-float rotY = 0;
 
 bool quit = false;
 
@@ -22,14 +17,14 @@ float mouseY = 0;
 
 float delta = 1;
 
-extern bool isMultiplayer;
+GameRenderer myRenderer;
 
 void manageGame()
 {
     // std::lock_guard<std::mutex> lock(chunkMapMutex);
     while (!quit)
     {
-        if (isMultiplayer)
+        if (myRenderer.isMultiplayer)
         {
             runMultiplayer();
         }
@@ -43,15 +38,14 @@ void manageGame()
 
 void generateWorld()
 {
-    glClearColor(39.0f / 256.0f, 25.0f / 256.0f, 17.0f / 256.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    nDrawText(13, 13, "Generating World...", {255, 50, 50, 50});
-    nDrawText(10, 10, "Generating World...", {255, 255, 255, 255});
-    SDL_GL_SwapWindow(window);
+    clearScreen();
+    drawText(13, 13, "Generating World...", {255, 50, 50, 50});
+    drawText(10, 10, "Generating World...", {255, 255, 255, 255});
+    finishRender();
 
-    if (!isMultiplayer)
+    if (!myRenderer.isMultiplayer)
     {
-        chunk::manage();
+        // chunk::manage();
     }
 }
 
@@ -72,45 +66,37 @@ int main(int argc, char *argv[])
         }
         else if (arg == "--multiplayer")
         {
-            isMultiplayer = 1;
+            myRenderer.isMultiplayer = 1;
         }
     }
 
-    if (!initGame())
+    if (!myRenderer.init())
     {
         return 1;
     }
 
     generateWorld();
 
-    std::thread manageThread(manageGame);
-
     // Spawn Player
     commonEntities[0] = new EntityPlayer();
     commonEntities[0]->y = 96;
-    commonEntities[0]->x = 0;
+    commonEntities[0]->x = std::pow(2,1);
+
+    myRenderer.camera.X = commonEntities[0]->x;
+    myRenderer.camera.Y = commonEntities[0]->y;
+    myRenderer.camera.Z = commonEntities[0]->z;
+
+    std::thread manageThread(manageGame);
 
     while (!quit)
     {
         handleEvents(quit);
         render();
         buildMeshes();
-        nDrawText(13, 13,
-                  std::to_string(int(1 / delta)) + " FPS\nx: " + std::to_string(cameraX) +
-                      "\ny: " + std::to_string(cameraY) +
-                      "\nz: " + std::to_string(cameraZ),
-                  {255, 50, 50, 50});
-        nDrawText(10, 10,
-                  std::to_string(int(1 / delta)) + " FPS\nx: " + std::to_string(cameraX) +
-                      "\ny: " + std::to_string(cameraY) +
-                      "\nz: " + std::to_string(cameraZ),
-                  {255, 255, 255, 255});
-        SDL_GL_SwapWindow(window);
-        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
     manageThread.join();
 
-    cleanup();
+    myRenderer.cleanup();
     return 0;
 }
