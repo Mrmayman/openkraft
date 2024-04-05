@@ -1,6 +1,20 @@
 # OpenKraft
+
+# Deprecated
+
+This project has been **abandoned**, because:
+
+- C++ is an unsafe and error prone language.
+- I am rewriting it in rust.
+- This code is very poorly written, buggy, unstable and slow.
+
+# Description
+
 A basic Minecraft clone in C++ and OpenGL.
 This project is fully free and open source under the GPL3.
+
+![](./img/openkraft.png)
+![](./img/openkraft_multiplayer.png)
 
 ## Features
 ### Singleplayer
@@ -15,12 +29,12 @@ This project is fully free and open source under the GPL3.
 - Live block changes (If someone places/breaks a block, you will see it)
 
 ## Disclaimer
-I am very inexperienced at programming. This code is very poorly written. While I am trying to improve it, expect horrible bugs.
-Currently some chunk packets aren't supported in multiplayer, so the game will randomly close. Just reopen the game when this happens, for the time being. I am working on fixing this.
+This code is very poorly written as I was not experienced in programming when I wrote this. Expect horrible bugs.
+Currently some chunk packets aren't supported in multiplayer, so the game will randomly close. Just reopen the game when this happens, for the time being. I won't fix this as it's an abandoned project and a rust rewrite is underway.
 
 ## Building and Support
-- Currently only supported on Linux
-- Will support Windows soon
+- If you're on linux, use one of these build scripts.
+- If you're on windows, I'm sure it will work but you're on your own (this is an abandoned project).
 ### Build scripts
 - `compile.sh` - Release build, maximum optimizations (linux, x86_64)
 - `debug-compile.sh` - Debug build, for use with gdb. Memory leak detection included (linux, x86_64)
